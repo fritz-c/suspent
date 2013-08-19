@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Suspent</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_audio_record_test">AudioRecordTest</string>
+    <string name="title_activity_camera_preview">CameraPreview</string>
+    <string name="title_activity_camera_activity">CameraPreviewContainer</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <!-- Labels -->
+
+
+    <!-- Errors -->
+    <string name="error_camera_not_found_title">Camera Not Found</string>
+    <string name="error_camera_not_found">A camera was not detected on your device. This application requires a camera.</string>
+
+</resources>
