@@ -49,35 +49,36 @@ public class CameraActivity extends Activity {
 		setContentView(R.layout.activity_camera_activity);
 
 		mTextField = (TextView) findViewById(R.id.countdown_clock);
-		// LinearLayout ll = new LinearLayout(this);
-		// mRecordButton = new RecordButton(this);
-		// ll.addView(mRecordButton, new
-		// LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-		// ViewGroup.LayoutParams.WRAP_CONTENT, 0));
-		// mPlayButton = new PlayButton(this);
-		// ll.addView(mPlayButton, new
-		// LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-		// ViewGroup.LayoutParams.WRAP_CONTENT, 0));
-		// setContentView(ll);
+		captureButton = (Button) findViewById(R.id.button_capture);
+		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 
 		// Create an instance of Camera
 		mCamera = getCameraInstance();
+		timerCount = new MyCountdown(WAIT_DURATION_BEFORE_PICTURE, 1000);
 
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(this, mCamera);
-		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(mPreview);
-		timerCount =  new MyCountdown(WAIT_DURATION_BEFORE_PICTURE, 1000);
+
 		// Add a listener to the Capture button
-		captureButton = (Button) findViewById(R.id.button_capture);
 		captureButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				captureButton.setClickable(false);
+				mTextField.setText("" + WAIT_DURATION_BEFORE_PICTURE / 1000);
 				startRecording();
 				timerCount.start();
 			}
 		});
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		if (mRecorder != null) {
+			mRecorder.release();
+			mRecorder = null;
+		}
 	}
 
 	/** A safe way to get an instance of the Camera object. */
@@ -114,55 +115,6 @@ public class CameraActivity extends Activity {
 		}
 	};
 
-	/** Create a File for saving an image or video */
-	private File getOutputMediaFile(int type) {
-
-		String state = Environment.getExternalStorageState();
-		if (!Environment.MEDIA_MOUNTED.equals(state)) {
-			// We can't read or write to the media, so return null
-			return null;
-		}
-
-		// For the save to sd card info:
-		// http://stackoverflow.com/a/3551906/1601953
-		File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/suspent/images");
-		dir.mkdirs();
-		File mediaFile;
-		imageFilepath = dir + "/IMG_" + uniqueStamp + ".jpg";
-
-		if (type == MEDIA_TYPE_IMAGE) {
-			// Create a media file name
-			mediaFile = new File(imageFilepath);
-		} else {
-			return null;
-		}
-		return mediaFile;
-	}
-
-	
-	
-	
-	// / Begin recording part
-
-	
-	
-	
-	public class MyCountdown extends CountDownTimer {
-		public MyCountdown(long millisInFuture, long countDownInterval) {
-			super(millisInFuture, countDownInterval);
-		}
-		@Override
-		public void onFinish() {
-			mCamera.setPreviewCallback(null);
-			mCamera.takePicture(null, null, mPicture);
-		}
-		@Override
-		public void onTick(long millisUntilFinished) {
-//			mTextField.setText("seconds remaining: " + millisUntilFinished / 1000);
-			mTextField.setText("" + millisUntilFinished / 1000);
-			// some script here
-		}
-	}
 
 	private void startRecording() {
 		mRecorder = new MyRecorder();
@@ -192,23 +144,54 @@ public class CameraActivity extends Activity {
 		mRecorder.release();
 		mRecorder = null;
 	}
+	
+	/** Create a File for saving an image or video */
+	private File getOutputMediaFile(int type) {
 
-	@Override
-	public void onPause() {
-		super.onPause();
-		if (mRecorder != null) {
-			mRecorder.release();
-			mRecorder = null;
+		String state = Environment.getExternalStorageState();
+		if (!Environment.MEDIA_MOUNTED.equals(state)) {
+			// We can't read or write to the media, so return null
+			return null;
 		}
-		// if (mPlayer != null) {
-		// mPlayer.release();
-		// mPlayer = null;
-		// }
+
+		// For the save to sd card info:
+		// http://stackoverflow.com/a/3551906/1601953
+		File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/suspent/images");
+		dir.mkdirs();
+		File mediaFile;
+		imageFilepath = dir + "/IMG_" + uniqueStamp + ".jpg";
+
+		if (type == MEDIA_TYPE_IMAGE) {
+			// Create a media file name
+			mediaFile = new File(imageFilepath);
+		} else {
+			return null;
+		}
+		return mediaFile;
+	}
+
+	public class MyCountdown extends CountDownTimer {
+		public MyCountdown(long millisInFuture, long countDownInterval) {
+			super(millisInFuture, countDownInterval);
+		}
+
+		@Override
+		public void onFinish() {
+			mCamera.setPreviewCallback(null);
+			mCamera.takePicture(null, null, mPicture);
+		}
+
+		@Override
+		public void onTick(long millisUntilFinished) {
+			// mTextField.setText("seconds remaining: " + millisUntilFinished /
+			// 1000);
+			mTextField.setText("" + millisUntilFinished / 1000);
+			// some script here
+		}
 	}
 
 	class MyRecorder extends MediaRecorder implements MediaRecorder.OnInfoListener {
-		
-		
+
 		@Override
 		public void onInfo(MediaRecorder mr, int what, int extra) {
 			switch (what) {
@@ -219,7 +202,6 @@ public class CameraActivity extends Activity {
 				intent.putExtra(AUDIO_FILEPATH_KEY, audioFilepath);
 				startActivity(intent);
 				captureButton.setClickable(true);
-				// ctodo change screen
 				break;
 			case MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED:
 			case MEDIA_RECORDER_INFO_UNKNOWN:
@@ -229,88 +211,4 @@ public class CameraActivity extends Activity {
 			}
 		}
 	}
-
-	// private static String mFileName = null;
-	//
-	// private CaptureButton mRecordButton = null;
-	//
-	// private PlayButton mPlayButton = null;
-	// private MediaPlayer mPlayer = null;
-
-	// private void onRecord(boolean start) {
-	// if (start) {
-	// startRecording();
-	// } else {
-	// stopRecording();
-	// }
-	// }
-
-	// class CaptureButton extends Button {
-	// boolean mStartRecording = true;
-	//
-	// OnClickListener clicker = new OnClickListener() {
-	// public void onClick(View v) {
-	// onRecord(mStartRecording);
-	// // if (mStartRecording) {
-	// // setText("Stop recording");
-	// // } else {
-	// // setText("Start recording");
-	// // }
-	// mStartRecording = !mStartRecording;
-	// }
-	// };
-	//
-	// public CaptureButton(Context context) {
-	// super(context);
-	// setText("Start recording");
-	// setOnClickListener(clicker);
-	// }
-	// }
-
-	// private void onPlay(boolean start) {
-	// if (start) {
-	// startPlaying();
-	// } else {
-	// stopPlaying();
-	// }
-	// }
-
-	// private void startPlaying() {
-	// mPlayer = new MediaPlayer();
-	// try {
-	// mPlayer.setDataSource(mFileName);
-	// mPlayer.prepare();
-	// mPlayer.start();
-	// } catch (IOException e) {
-	// Log.e(LOG_TAG, "prepare() failed");
-	// }
-	// }
-
-	// private void stopPlaying() {
-	// mPlayer.release();
-	// mPlayer = null;
-	// }
-
-	// class PlayButton extends Button {
-	// boolean mStartPlaying = true;
-	//
-	// OnClickListener clicker = new OnClickListener() {
-	// public void onClick(View v) {
-	// onPlay(mStartPlaying);
-	// if (mStartPlaying) {
-	// setText("Stop playing");
-	// } else {
-	// setText("Start playing");
-	// }
-	// mStartPlaying = !mStartPlaying;
-	// }
-	// };
-	//
-	// public PlayButton(Context ctx) {
-	// super(ctx);
-	// setText("Start playing");
-	// setOnClickListener(clicker);
-	// }
-	// }
-
 }
