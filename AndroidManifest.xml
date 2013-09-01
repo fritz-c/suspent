@@ -32,11 +32,6 @@
         <activity
             android:name="com.example.suspent.MainActivity"
             android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name="com.example.suspent.AudioRecordTest"
@@ -52,6 +47,15 @@
             android:name="com.example.suspent.CameraActivity"
             android:label="@string/title_activity_camera_activity"
             android:screenOrientation="landscape" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.example.suspent.SuspentReview"
+            android:label="@string/title_activity_suspent_review" >
         </activity>
     </application>
 

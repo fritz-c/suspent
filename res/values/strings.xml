@@ -15,5 +15,7 @@
     <!-- Errors -->
     <string name="error_camera_not_found_title">Camera Not Found</string>
     <string name="error_camera_not_found">A camera was not detected on your device. This application requires a camera.</string>
+    <string name="title_activity_suspent_review">SuspentReview</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

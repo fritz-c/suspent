@@ -17,7 +17,7 @@ import android.view.SurfaceView;
 
 /** A basic Camera preview class */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
-    private static final String TAG = "";
+    private static final String TAG = "Camera Preview";
 	private SurfaceHolder mHolder;
     private Camera mCamera;
 
