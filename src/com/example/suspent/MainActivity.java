@@ -30,8 +30,7 @@ public class MainActivity extends Activity {
 			alertDialogBuilder.setTitle(getResources().getString(R.string.error_camera_not_found_title));
 
 			// set dialog message
-			alertDialogBuilder.setMessage(getResources().getString(R.string.error_camera_not_found))
-				.setPositiveButton(
+			alertDialogBuilder.setMessage(getResources().getString(R.string.error_camera_not_found)).setPositiveButton(
 					getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							// if this button is clicked, close current activity
@@ -54,12 +53,12 @@ public class MainActivity extends Activity {
 		}
 	};
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
+	// @Override
+	// public boolean onCreateOptionsMenu(Menu menu) {
+	// // Inflate the menu; this adds items to the action bar if it is present.
+	// getMenuInflater().inflate(R.menu.main, menu);
+	// return true;
+	// }
 
 	/** Check if this device has a camera */
 	private boolean checkCameraHardware(Context context) {

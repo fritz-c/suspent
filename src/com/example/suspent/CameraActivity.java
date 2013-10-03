@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
+import android.hardware.Camera.ShutterCallback;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -19,7 +20,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 public class CameraActivity extends Activity {
 
@@ -29,45 +29,44 @@ public class CameraActivity extends Activity {
 	public static final int MEDIA_TYPE_IMAGE = 1;
 	public static final int AUDIO_LENGTH = 7000;
 	public static final int WAIT_DURATION_BEFORE_PICTURE = 5000;
+	public static final int WAIT_DURATION_AFTER_PICTURE = 2000;
 
 	private Camera mCamera;
 	private CameraPreview mPreview;
-	private Button captureButton;
-	private TextView mTextField;
+	private Button mCaptureButton;
 
-	private String uniqueStamp;
-	private String imageFilepath;
-	private String audioFilepath;
+	private String mUniqueStamp;
+	private String mImageFilepath;
+	private String mAudioFilepath;
 
 	private static final String LOG_TAG = "AudioRecordTest";
 	private MyRecorder mRecorder = null;
-	MyCountdown timerCount;
+	private MyCountdown mTimerCount;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_camera_activity);
 
-		mTextField = (TextView) findViewById(R.id.countdown_clock);
-		captureButton = (Button) findViewById(R.id.button_capture);
+		mCaptureButton = (Button) findViewById(R.id.button_capture);
 		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 
 		// Create an instance of Camera
 		mCamera = getCameraInstance();
-		timerCount = new MyCountdown(WAIT_DURATION_BEFORE_PICTURE, 1000);
+		mTimerCount = new MyCountdown(WAIT_DURATION_BEFORE_PICTURE, 1000);
 
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(this, mCamera);
 		preview.addView(mPreview);
 
 		// Add a listener to the Capture button
-		captureButton.setOnClickListener(new View.OnClickListener() {
+		mCaptureButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				captureButton.setClickable(false);
-				mTextField.setText("" + WAIT_DURATION_BEFORE_PICTURE / 1000);
+				mCaptureButton.setClickable(false);
+				mCaptureButton.setText("" + WAIT_DURATION_BEFORE_PICTURE / 1000);
 				startRecording();
-				timerCount.start();
+				mTimerCount.start();
 			}
 		});
 	}
@@ -86,6 +85,7 @@ public class CameraActivity extends Activity {
 		Camera c = null;
 		try {
 			c = Camera.open(); // attempt to get a Camera instance
+			// c.setDisplayOrientation(90); // Set camera to portrait mode
 		} catch (Exception e) {
 			// Camera is not available (in use or does not exist)
 		}
@@ -115,7 +115,6 @@ public class CameraActivity extends Activity {
 		}
 	};
 
-
 	private void startRecording() {
 		mRecorder = new MyRecorder();
 		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -124,10 +123,10 @@ public class CameraActivity extends Activity {
 		mRecorder.setOnInfoListener(mRecorder);
 		File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/suspent/audio");
 		dir.mkdirs();
-		uniqueStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		audioFilepath = dir.getAbsolutePath() + "/AUD_" + uniqueStamp + ".3gp";
+		mUniqueStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		mAudioFilepath = dir.getAbsolutePath() + "/AUD_" + mUniqueStamp + ".3gp";
 
-		mRecorder.setOutputFile(audioFilepath);
+		mRecorder.setOutputFile(mAudioFilepath);
 		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
 		try {
@@ -144,7 +143,7 @@ public class CameraActivity extends Activity {
 		mRecorder.release();
 		mRecorder = null;
 	}
-	
+
 	/** Create a File for saving an image or video */
 	private File getOutputMediaFile(int type) {
 
@@ -159,11 +158,11 @@ public class CameraActivity extends Activity {
 		File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/suspent/images");
 		dir.mkdirs();
 		File mediaFile;
-		imageFilepath = dir + "/IMG_" + uniqueStamp + ".jpg";
+		mImageFilepath = dir + "/IMG_" + mUniqueStamp + ".jpg";
 
 		if (type == MEDIA_TYPE_IMAGE) {
 			// Create a media file name
-			mediaFile = new File(imageFilepath);
+			mediaFile = new File(mImageFilepath);
 		} else {
 			return null;
 		}
@@ -178,14 +177,12 @@ public class CameraActivity extends Activity {
 		@Override
 		public void onFinish() {
 			mCamera.setPreviewCallback(null);
-			mCamera.takePicture(null, null, mPicture);
+			mCamera.takePicture(shutterCallback, null, mPicture);
 		}
 
 		@Override
 		public void onTick(long millisUntilFinished) {
-			// mTextField.setText("seconds remaining: " + millisUntilFinished /
-			// 1000);
-			mTextField.setText("" + millisUntilFinished / 1000);
+			mCaptureButton.setText("" + millisUntilFinished / 1000);
 			// some script here
 		}
 	}
@@ -198,10 +195,10 @@ public class CameraActivity extends Activity {
 			case MEDIA_RECORDER_INFO_MAX_DURATION_REACHED:
 				stopRecording();
 				final Intent intent = new Intent(getApplicationContext(), SuspentReview.class);
-				intent.putExtra(IMAGE_FILEPATH_KEY, imageFilepath);
-				intent.putExtra(AUDIO_FILEPATH_KEY, audioFilepath);
+				intent.putExtra(IMAGE_FILEPATH_KEY, mImageFilepath);
+				intent.putExtra(AUDIO_FILEPATH_KEY, mAudioFilepath);
 				startActivity(intent);
-				captureButton.setClickable(true);
+				mCaptureButton.setClickable(true);
 				break;
 			case MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED:
 			case MEDIA_RECORDER_INFO_UNKNOWN:
@@ -211,4 +208,12 @@ public class CameraActivity extends Activity {
 			}
 		}
 	}
+
+	private final ShutterCallback shutterCallback = new ShutterCallback() {
+		public void onShutter() {
+			// AudioManager mgr = (AudioManager)
+			// getSystemService(Context.AUDIO_SERVICE);
+			// mgr.playSoundEffect(AudioManager.FLAG_PLAY_SOUND);
+		}
+	};
 }
